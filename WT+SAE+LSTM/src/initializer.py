@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Initializer:
     _ts = None
 
@@ -43,11 +44,9 @@ class Initializer:
 
     @staticmethod
     def as_matrix():
-        return Initializer._ts.drop(['Date', 'Adj Close'], axis=1).values.transpose()
+        # drop unwanted columns and NaN values (from rolling indices)
+        trimmed = Initializer._ts.drop(['Date', 'Adj Close'], axis=1)
+        trimmed.drop(trimmed.index[:30], inplace=True)
+        trimmed.drop(trimmed.index[-30:], inplace=True)
 
-
-
-
-
-
-
+        return trimmed.values.transpose()
