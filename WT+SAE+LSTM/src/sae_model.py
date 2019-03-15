@@ -17,6 +17,7 @@ class Autoencoder(nn.Module):
                  gamma=0.2,
                  beta=0,
                  hidden_nodes_activation_rate=1,
+                 lr=0.001,
                  debug=False):
         super(Autoencoder, self).__init__()
         self.iter_ctr = 1
@@ -36,7 +37,7 @@ class Autoencoder(nn.Module):
             # nn.Sigmoid() //Better results without it
         )
 
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=0.001)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=lr)
 
     def criterion(self, input, target, hidden):
         out_diff = (1 / 2) * torch.norm(target - input, dim=2).sum()
@@ -108,6 +109,7 @@ class StackedAutoencoder(nn.Module):
                  gamma=0.2,
                  beta=0,
                  hidden_nodes_activation_rate=1,
+                 lr=0.001,
                  debug=False):
         super(StackedAutoencoder, self).__init__()
         self.debug = debug
@@ -119,7 +121,7 @@ class StackedAutoencoder(nn.Module):
         self.layers = nn.ModuleList()
         for input, hidden in self.layers_sizes_pairs:
             layer = Autoencoder(input, hidden, debug=debug, gamma=gamma, beta=beta,
-                                hidden_nodes_activation_rate=hidden_nodes_activation_rate)
+                                hidden_nodes_activation_rate=hidden_nodes_activation_rate, lr=lr)
             self.layers.append(layer)
         if self.debug:
             print("-" * 70)

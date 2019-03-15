@@ -1,16 +1,21 @@
 import torch
 import torch.nn as nn
-from initializer import Initializer
-import numpy as np
 
-class LSTM_model(nn.Module):
-    def __init__(self, ninp, nhid, nlayers):
-        super(LSTM_model, self).__init__()
-        self.lstm = nn.LSTM(ninp, nhid, nlayers)
+
+class TsLSTM(nn.Module):
+    def __init__(self, delay, daily_features, nlayers=1):
+        super(TsLSTM, self).__init__()
+        self.delay = delay
+        self.lstm = nn.LSTM(daily_features, 1, nlayers, batch_first=True)
+
+    def criterion(self, input, target):
+        input = torch.squeeze(input) #TODO batching
+        target = torch.squeeze(target)
+        return torch.norm(input[self.delay:-1] - target[self.delay + 1:])
 
     def forward(self, input):
         output, _ = self.lstm(input)
-        return output[-1]
+        return output
 
 # jakieś syfy testowe
 # def prepareData (data, windowSize, batchSize):
