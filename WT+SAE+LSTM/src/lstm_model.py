@@ -12,8 +12,7 @@ class TsLSTM(nn.Module):
     def criterion(self, input, target):
         input = torch.squeeze(input) #TODO batching
         target = torch.squeeze(target)
-        return torch.norm(input - target) #TODO delete
-        #return torch.norm(input[self.delay:-1] - target[self.delay + 1:]) ** 2
+        return torch.norm(input[self.delay:] - target[self.delay:])
 
     def forward(self, input):
         output, _ = self.lstm(input)

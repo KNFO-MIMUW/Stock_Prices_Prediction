@@ -74,9 +74,9 @@ class DataLoader:
         dataset = []
         data = self._normalize_data(data)
         _, series_length = data.shape
-        while i + t <= series_length:
+        while i + t + 1 <= series_length:
             full_data = torch.unsqueeze(torch.tensor(data[:, i:i + t]).float().t(), dim=0)
-            price_data = torch.unsqueeze(torch.tensor(data[3, i:i + t]).float(), dim=0)
+            price_data = torch.unsqueeze(torch.tensor(data[3, i + 1:i + t + 1]).float(), dim=0)
             dataset.append((full_data, price_data))
             i += b
         return dataset
