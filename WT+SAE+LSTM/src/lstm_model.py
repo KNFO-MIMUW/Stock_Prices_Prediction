@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch import optim
 
 
 class TsLSTM(nn.Module):
@@ -11,38 +12,40 @@ class TsLSTM(nn.Module):
     def criterion(self, input, target):
         input = torch.squeeze(input) #TODO batching
         target = torch.squeeze(target)
-        return torch.norm(input[self.delay:-1] - target[self.delay + 1:])
+        return torch.norm(input - target) #TODO delete
+        #return torch.norm(input[self.delay:-1] - target[self.delay + 1:]) ** 2
 
     def forward(self, input):
         output, _ = self.lstm(input)
         return output
 
-# jakieś syfy testowe
-# def prepareData (data, windowSize, batchSize):
-#     test = data[:, :800]
-#     target = data[:, 800:1000]
-#
-#     testSeqs = np.empty([800-windowSize+1, 1, windowSize])
-#     testTargets = np.empty([800-windowSize+1, 1, 1])
-#
-#     for i in range(800-windowSize+1):
-#         testSeqs[i] = test[3,i:i+windowSize]
-#         testTargets[i] = test[3, i+windowSize-1]
-#
-#     for i in range(1000/batchSize):
-#         for j in range(batchSize):
-#
-#
-#
-# Initializer.load("test.csv")
-# data = Initializer.as_matrix()
-#
-# net = LSTM_model(1, 1, 1)
-# sample = torch.from_numpy(data[:,:4])
-# test = torch.from_numpy(data[:,1:5])
-# sample = sample.contiguous().view(4, -1, 13)
-# print(sample)
-# output = net(sample.float())
-# print(output)
-#
-# prepareData(data, 20, 1)
+def test():
+    n = 40
+    epoch = 1000
+    x = torch.tensor([[-2 for _ in range(n)]])
+    x = torch.unsqueeze(x, 2).float()
+
+    z = x
+
+    lstm = TsLSTM(2, 1, 2)
+    optimizer = optim.SGD(lstm.parameters(), lr=0.1)
+    lstm.train()
+    for e in range(epoch):
+        optimizer.zero_grad()
+        y = lstm(x)
+        loss = lstm.criterion(y, z)
+        loss.backward()
+        if e % 100 == 0:
+            for p in lstm.parameters():
+                    print('===========\ngradient:{}\n'.format, p.grad)
+            print("loss={}".format(loss))
+        optimizer.step()
+
+    lstm.eval()
+    y = lstm(x)
+    print(y)
+
+
+
+if __name__ == "__main__":
+    test()

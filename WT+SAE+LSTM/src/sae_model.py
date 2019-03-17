@@ -34,7 +34,7 @@ class Autoencoder(nn.Module):
         )
         self.backward_pass = nn.Sequential(
             nn.Linear(hidden_size, input_size),
-            # nn.Sigmoid() //Better results without it
+            nn.Sigmoid()
         )
 
         self.optimizer = torch.optim.SGD(self.parameters(), lr=lr)

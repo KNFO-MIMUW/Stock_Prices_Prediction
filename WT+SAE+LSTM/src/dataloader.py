@@ -1,5 +1,6 @@
 import pandas as pd
 import torch
+import numpy as np
 
 
 class DataLoader:
@@ -7,6 +8,8 @@ class DataLoader:
         path = '../data/' + ts_name
         self._ts = pd.read_csv(path)
         self._fill()
+        self.max = []
+        self.min = []
 
     def _fill(self):
         # MACD index
@@ -48,13 +51,32 @@ class DataLoader:
 
         return trimmed.values.transpose()
 
+    def _normalize_data(self, data):
+        ndata = []
+        for index in data:
+            maxi = max(index)
+            mini = min(index)
+            self.max.append(maxi)
+            self.min.append(mini)
+            if maxi == mini:
+                nindex = [0 for _ in index]
+            else:
+                nindex = [(x - mini) / (maxi - mini) for x in index]
+            ndata.append(nindex)
+        return np.array(ndata)
+
     def prepare_dataset_sae(self, data, t, b):
         i = 0
         dataset = []
+        data = self._normalize_data(data)
         _, series_length = data.shape
         while i + t <= series_length:
-            full_data = torch.unsqueeze(torch.tensor(data[:, i:i + t]).float().t(),  dim=0)
+            full_data = torch.unsqueeze(torch.tensor(data[:, i:i + t]).float().t(), dim=0)
             price_data = torch.unsqueeze(torch.tensor(data[3, i:i + t]).float(), dim=0)
             dataset.append((full_data, price_data))
             i += b
         return dataset
+
+
+    def denormalize_data(self, x):
+        return x  # TODO

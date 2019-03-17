@@ -8,7 +8,7 @@ import torch.optim as optim
 
 def test():
     runner = Runner('ford_ts.csv', hidden_layers_sizes=[6], debug=True)
-    runner.train(epoch=1)
+    runner.train(epoch=5)
 
 class Runner:
     def __init__(self, ts_file_name,
@@ -43,14 +43,16 @@ class Runner:
             self.sae(x)
 
     def _train_lstm_epoch(self, dataset, debug=False):
+        total_loss = 0
         for x, target in dataset:
             self.lstm_optimizer.zero_grad()
             res = self.lstm(x)
             loss = self.lstm.criterion(res, target)
-            if debug:
-                print("[LSTM LOSS] lstm loss={}".format(loss))
+            total_loss += loss
             loss.backward()
             self.lstm_optimizer.step()
+        if debug:
+            print("[LSTM LOSS] avarage lstm loss on dataset={}".format(total_loss / len(dataset)))
 
     def _train_sae(self, dataset, epoch=50):
         self.sae.train()
@@ -60,7 +62,7 @@ class Runner:
     def _train_lstm(self, dataset, epoch=50):
         self.lstm.train()
         for e in range(epoch):
-            if self.debug and e % 5 == 0:
+            if self.debug:
                 self._train_lstm_epoch(dataset, debug=True)
             else:
                 self._train_lstm_epoch(dataset, debug=False)
@@ -68,6 +70,7 @@ class Runner:
 
     def train(self, epoch=50):
         dataset = self.data_loader.prepare_dataset_sae(self.ts_data, self.time_frame, self.time_bias)
+        print("[RUNNER] SAE training started")
         self._train_sae(dataset, epoch)
         if self.debug:
             print("[RUNNER] SAE training finished")
@@ -76,6 +79,7 @@ class Runner:
         for data, target in dataset:
             compressed_data = self.sae(data)
             lstm_dataset.append((compressed_data, target))
+        print("[RUNNER] LSTM training started")
         self._train_lstm(lstm_dataset, epoch)
         if self.debug:
             print("[RUNNER] LSTM training finished")
