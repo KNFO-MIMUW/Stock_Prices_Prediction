@@ -4,12 +4,16 @@ import numpy as np
 
 
 class DataLoader:
-    def __init__(self, ts_name):
+    def __init__(self, ts_name, last_dayes=-1):
         path = '../data/' + ts_name
         self._ts = pd.read_csv(path)
+
+        if last_dayes != -1:
+            self._ts = self._ts.tail(last_dayes)
         self._fill()
         self.max = []
         self.min = []
+
 
     def _fill(self):
         # MACD index
