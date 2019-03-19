@@ -21,17 +21,13 @@ class CrossValidator:
 
         return dataset[train_end:validation_end]
 
-    def run_validation(self, runner, dataset, epoch_train=100):
-        training_dataset = self._get_training(dataset)
-        runner.train(training_dataset, epoch_train)
-
-        validation_dataset = self._get_validation(dataset)
+    #TODO temporary function for debug
+    def _eval_plot(self, dataset, runner):
         errors = []
-
         pred_values = []
         target_values = []
 
-        for x, t in validation_dataset:
+        for x, t in dataset:
             pred_t = runner.eval_single(x)
             t = t.squeeze()
             pred_t = pred_t.squeeze()
@@ -40,14 +36,24 @@ class CrossValidator:
             target_values.append(t[-1])
             pred_values.append(pred_t[-1])
 
-
-
-        cross_diff = np.linalg.norm(np.array(errors))
-        print("[CROSS-VALIDATION] Loss on validation set = {}".format(cross_diff))
-
         comparation = np.array([pred_values, target_values])
         comparation = pd.DataFrame(data=comparation.transpose(), columns=['predicted', 'target'])
         comparation.plot()
         plt.show()
+
+        return errors
+
+    def run_validation(self, runner, dataset, sae_epoch=100, lstm_epoch=50):
+        training_dataset = self._get_training(dataset)
+        runner.train(training_dataset, sae_epoch, lstm_epoch)
+
+        validation_dataset = self._get_validation(dataset)
+
+        _ = self._eval_plot(training_dataset, runner)
+        errors = self._eval_plot(validation_dataset, runner)
+
+        cross_diff = np.linalg.norm(np.array(errors))
+        print("[CROSS-VALIDATION] Loss on validation set = {}".format(cross_diff))
+
 
         return cross_diff

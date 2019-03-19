@@ -13,7 +13,7 @@ def test():
     lvl = 2
     wavelet = 'Haar'
     ts_file_name = 'ford_ts.csv'
-    last_days = 400
+    last_days = 600
     time_frame = 30
     time_bias = 1
 
@@ -30,10 +30,10 @@ def test():
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
-    runner = Runner(daily_features, hidden_layers_sizes=[10], debug=True)
+    runner = Runner(daily_features, hidden_layers_sizes=[10, 10], debug=True)
 
     cross_validator = CrossValidator()
-    validation_loss = cross_validator.run_validation(runner, dataset, 100)
+    validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=4, lstm_epoch=2)
     print("[RUNNER] Dollars lost={}".format(data_loader.to_dolar(validation_loss)))
 
 
@@ -88,12 +88,12 @@ class Runner:
             else:
                 self._train_lstm_epoch(dataset, debug=False)
 
-    def train(self, dataset, epoch=50):
+    def train(self, dataset, sae_epoch=100, lstm_epoch=50):
         if len(dataset) == 0:
             print("[LSTM LOSS] Empty dataset exiting training!")
             return
         print("[RUNNER] SAE training started")
-        self._train_sae(dataset, epoch)
+        self._train_sae(dataset, sae_epoch)
         if self.debug:
             print("[RUNNER] SAE training finished")
         lstm_dataset = []
@@ -102,7 +102,7 @@ class Runner:
             compressed_data = self.sae(data)
             lstm_dataset.append((compressed_data, target))
         print("[RUNNER] LSTM training started")
-        self._train_lstm(lstm_dataset, epoch)
+        self._train_lstm(lstm_dataset, lstm_epoch)
         if self.debug:
             print("[RUNNER] LSTM training finished")
 
