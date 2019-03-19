@@ -4,7 +4,13 @@ import numpy as np
 
 
 class DataLoader:
-    def __init__(self, ts_name, last_days=-1):
+    PRICE_INDEX = 3
+
+    def __init__(self, ts_name, last_days=-1, debug=False):
+        self.max = []
+        self.min = []
+        self.debug = debug
+
         path = '../data/' + ts_name
         self._ts = pd.read_csv(path)
 
@@ -12,9 +18,6 @@ class DataLoader:
             self._ts = self._ts.tail(last_days)
 
         self._fill()
-        self.max = []
-        self.min = []
-
 
     def _fill(self):
         # MACD index
@@ -48,10 +51,18 @@ class DataLoader:
         self._ts['MA5'] = self._ts['Close'].rolling(5).mean()
         self._ts['MA10'] = self._ts['Close'].rolling(10).mean()
 
+        print("[DATA LOADER] Filled dataset.")
+
     def as_matrix(self):
         # drop unwanted columns and NaN values (from rolling indices)
         trimmed = self._ts.drop(['Date', 'Adj Close'], axis=1)
         trimmed.drop(trimmed.index[:30], inplace=True)
+
+        if self.debug:
+            time_frames, daily_features = self._ts.shape
+            print("""[DATA LOADER] Trimmed dataset created:
+            time_frames     {}
+            daily features  {}""".format(time_frames, daily_features))
         return trimmed.values.transpose()
 
     def _normalize_data(self, data):
@@ -75,21 +86,24 @@ class DataLoader:
         _, series_length = data.shape
         while i + t + 1 <= series_length:
             full_data = torch.unsqueeze(torch.tensor(data[:, i:i + t]).float().t(), dim=0)
-            price_data = torch.unsqueeze(torch.tensor(data[3, i + 1:i + t + 1]).float(), dim=0)
+            price_data = torch.unsqueeze(
+                torch.tensor(data[self.PRICE_INDEX, i + 1:i + t + 1]).float(), dim=0)
             dataset.append((full_data, price_data))
             i += b
         return dataset
 
-
     def denormalize_data(self, data):
         ndata = []
         for ctr, index in enumerate(data):
-            maxi = self.max[ctr]
-            mini = self.min[ctr]
-            if (maxi == mini):
-                nindex = [maxi for _ in index]
-            else:
-                nindex = [x * (maxi - mini) + mini for x in index]
+            nindex = [self.to_dolar(x, ctr) for x in index]
             ndata.append(nindex)
         return np.array(ndata)
 
+    def to_dolar(self, x, idx=PRICE_INDEX):
+        maxi = self.max[idx]
+        mini = self.min[idx]
+
+        if maxi == mini:
+            return maxi
+        else:
+            return x * (maxi - mini) + mini

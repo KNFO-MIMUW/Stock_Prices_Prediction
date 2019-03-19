@@ -1,0 +1,19 @@
+Dataset
+  last_dayes                    400
+  time_frame                    30
+Wavelet:
+  lvl =                         2
+  wavelet =                     'Haar'
+SAE:
+  hidden_layers_sizes           [10]
+  gamma                         0.2
+  beta                          0
+  hidden_nodes_activation_rate  1
+  lr                            0.001
+LSTM:
+  delay                         4
+  nlayers                       1
+  lr                            0.05
+
+
+

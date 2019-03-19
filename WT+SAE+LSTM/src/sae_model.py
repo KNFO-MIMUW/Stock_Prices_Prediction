@@ -61,7 +61,7 @@ class Autoencoder(nn.Module):
 
         if self._is_debug():
             print(
-                """[LOSS INFO] Autoencoder [i:{}, h:{}] (iter: {}th):
+                """[SAE LOSS] Autoencoder [i:{}, h:{}] (iter: {}th):
             out_diff                {}
             weight_decay            {}
             sparse_penalty_term     {}\n""".format(

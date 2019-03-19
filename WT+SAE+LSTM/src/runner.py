@@ -8,43 +8,44 @@ from cross_validator import CrossValidator
 import torch
 from matplotlib import pyplot as plt
 
+
 def test():
     lvl = 2
     wavelet = 'Haar'
     ts_file_name = 'ford_ts.csv'
     last_days = 400
     time_frame = 30
-    time_bias = 4
+    time_bias = 1
 
-    data_loader = DataLoader(ts_file_name, last_days)
+    data_loader = DataLoader(ts_file_name, last_days, debug=True)
 
     raw_data = data_loader.as_matrix()
+    ts_data = denoise(raw_data, lvl, wavelet)
+
     plt.plot(raw_data[3])
     plt.show()
-
-    ts_data = denoise(raw_data, lvl, wavelet)
     plt.plot(ts_data[3])
     plt.show()
 
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
-    runner = Runner(daily_features, hidden_layers_sizes=[6], debug=True)
+    runner = Runner(daily_features, hidden_layers_sizes=[10], debug=True)
 
     cross_validator = CrossValidator()
     validation_loss = cross_validator.run_validation(runner, dataset, 100)
+    print("[RUNNER] Dollars lost={}".format(data_loader.to_dolar(validation_loss)))
 
-    print("[CROSS-VALIDATION] Loss on validation set = {}".format(validation_loss))
 
 
 class Runner:
     def __init__(self, daily_features,
-                 hidden_layers_sizes=[5, 4, 4, 4, 4],
+                 hidden_layers_sizes=[10, 10, 10, 10, 10],
                  gamma=0.2,
                  beta=0,
                  hidden_nodes_activation_rate=1,
                  sae_lr=0.001,
-                 delay=1,
+                 delay=4,
                  lstm_lr=0.05,
                  debug=False):
 
@@ -88,6 +89,9 @@ class Runner:
                 self._train_lstm_epoch(dataset, debug=False)
 
     def train(self, dataset, epoch=50):
+        if len(dataset) == 0:
+            print("[LSTM LOSS] Empty dataset exiting training!")
+            return
         print("[RUNNER] SAE training started")
         self._train_sae(dataset, epoch)
         if self.debug:

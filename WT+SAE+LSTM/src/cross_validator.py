@@ -11,7 +11,7 @@ class CrossValidator:
         assert (train_ratio + valid_ratio + test_ratio == 1)
 
     def _get_training(self, dataset):
-        new_length = int(len(dataset) * self.test_ratio)
+        new_length = int(len(dataset) * self.train_ratio)
         return dataset[:new_length]
 
     def _get_validation(self, dataset):
@@ -27,19 +27,27 @@ class CrossValidator:
 
         validation_dataset = self._get_validation(dataset)
         errors = []
+
         pred_values = []
         target_values = []
+
         for x, t in validation_dataset:
             pred_t = runner.eval_single(x)
             t = t.squeeze()
-            target_values.append(t[-1])
             pred_t = pred_t.squeeze()
-            pred_values.append(pred_t[-1])
             errors.append(t[-1] - pred_t[-1])
+
+            target_values.append(t[-1])
+            pred_values.append(pred_t[-1])
+
+
+
+        cross_diff = np.linalg.norm(np.array(errors))
+        print("[CROSS-VALIDATION] Loss on validation set = {}".format(cross_diff))
 
         comparation = np.array([pred_values, target_values])
         comparation = pd.DataFrame(data=comparation.transpose(), columns=['predicted', 'target'])
         comparation.plot()
         plt.show()
 
-        return np.linalg.norm(np.array(errors))
+        return cross_diff
