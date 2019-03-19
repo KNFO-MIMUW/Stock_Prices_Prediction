@@ -2,8 +2,8 @@ Dataset
   last_dayes                    400
   time_frame                    30
 Wavelet:
-  lvl =                         2
-  wavelet =                     'Haar'
+  lvl                           2
+  wavelet                       'Haar'
 SAE:
   hidden_layers_sizes           [10]
   gamma                         0.2
@@ -14,6 +14,8 @@ LSTM:
   delay                         4
   nlayers                       1
   lr                            0.05
-
+RESULT:
+  validation_loss               0.318
+  dollar_loss                   11.80
 
 
