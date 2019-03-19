@@ -4,12 +4,13 @@ import numpy as np
 
 
 class DataLoader:
-    def __init__(self, ts_name, last_dayes=-1):
+    def __init__(self, ts_name, last_days=-1):
         path = '../data/' + ts_name
         self._ts = pd.read_csv(path)
 
-        if last_dayes != -1:
-            self._ts = self._ts.tail(last_dayes)
+        if last_days != -1:
+            self._ts = self._ts.tail(last_days)
+
         self._fill()
         self.max = []
         self.min = []
@@ -51,8 +52,6 @@ class DataLoader:
         # drop unwanted columns and NaN values (from rolling indices)
         trimmed = self._ts.drop(['Date', 'Adj Close'], axis=1)
         trimmed.drop(trimmed.index[:30], inplace=True)
-        #        trimmed.drop(trimmed.index[-30:], inplace=True)
-
         return trimmed.values.transpose()
 
     def _normalize_data(self, data):
@@ -82,5 +81,15 @@ class DataLoader:
         return dataset
 
 
-    def denormalize_data(self, x):
-        return x  # TODO
+    def denormalize_data(self, data):
+        ndata = []
+        for ctr, index in enumerate(data):
+            maxi = self.max[ctr]
+            mini = self.min[ctr]
+            if (maxi == mini):
+                nindex = [maxi for _ in index]
+            else:
+                nindex = [x * (maxi - mini) + mini for x in index]
+            ndata.append(nindex)
+        return np.array(ndata)
+

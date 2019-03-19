@@ -6,27 +6,35 @@ from lstm_model import TsLSTM
 import torch.optim as optim
 from cross_validator import CrossValidator
 import torch
-
+from matplotlib import pyplot as plt
 
 def test():
     lvl = 2
     wavelet = 'Haar'
     ts_file_name = 'ford_ts.csv'
-    last_dayes = 400
-    time_frame = 69
-    time_bias = 1
+    last_days = 400
+    time_frame = 30
+    time_bias = 4
 
-    data_loader = DataLoader(ts_file_name, last_dayes)
-    ts_data = denoise(data_loader.as_matrix(), lvl, wavelet)
+    data_loader = DataLoader(ts_file_name, last_days)
+
+    raw_data = data_loader.as_matrix()
+    plt.plot(raw_data[3])
+    plt.show()
+
+    ts_data = denoise(raw_data, lvl, wavelet)
+    plt.plot(ts_data[3])
+    plt.show()
+
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
     runner = Runner(daily_features, hidden_layers_sizes=[6], debug=True)
 
     cross_validator = CrossValidator()
-    validation_loss = cross_validator.run_validation(runner, dataset, 200)
+    validation_loss = cross_validator.run_validation(runner, dataset, 100)
 
-    print("[CROSS-VALIDATION]Loss on validation set={}".format(validation_loss))
+    print("[CROSS-VALIDATION] Loss on validation set = {}".format(validation_loss))
 
 
 class Runner:
@@ -37,7 +45,7 @@ class Runner:
                  hidden_nodes_activation_rate=1,
                  sae_lr=0.001,
                  delay=1,
-                 lstm_lr=0.01,
+                 lstm_lr=0.05,
                  debug=False):
 
         hidden_layers_sizes.insert(0, daily_features)
@@ -64,7 +72,7 @@ class Runner:
             loss.backward()
             self.lstm_optimizer.step()
         if debug:
-            print("[LSTM LOSS] avarage lstm loss on dataset={}".format(total_loss / len(dataset)))
+            print("[LSTM LOSS] average lstm loss on dataset = {}".format(total_loss / len(dataset)))
 
     def _train_sae(self, dataset, epoch=50):
         self.sae.train()
