@@ -3,7 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-class CrossValidator:
+class Validator:
     def __init__(self, train_ratio=0.8, valid_ratio=0.1, test_ratio=0.1):
         self.train_ratio = train_ratio
         self.valid_ratio = valid_ratio
@@ -21,8 +21,14 @@ class CrossValidator:
 
         return dataset[train_end:validation_end]
 
+    def _get_test(self, dataset):
+        ldata = len(dataset)
+        test_beg = int(ldata * (self.train_ratio + self.valid_ratio))
+
+        return dataset[test_beg:]
+
     #TODO temporary function for debug
-    def _eval_plot(self, dataset, runner):
+    def _eval_and_plot(self, dataset, runner):
         errors = []
         pred_values = []
         target_values = []
@@ -47,14 +53,11 @@ class CrossValidator:
 
         return errors, pred_target
 
-    def run_validation(self, runner, dataset, sae_epoch=100, lstm_epoch=50):
-        training_dataset = self._get_training(dataset)
+    def train_and_eval_hard(self, runner, training_dataset, evaluation_dataset, sae_epoch, lstm_epoch):
         runner.train(training_dataset, sae_epoch, lstm_epoch)
 
-        validation_dataset = self._get_validation(dataset)
-
-        _ = self._eval_plot(training_dataset, runner)
-        errors, pred_target = self._eval_plot(validation_dataset, runner)
+        _ = self._eval_and_plot(training_dataset, runner)
+        errors, pred_target = self._eval_and_plot(evaluation_dataset, runner)
 
         cross_errors_square_norm = np.linalg.norm(np.array(errors))
         print(
@@ -62,3 +65,15 @@ class CrossValidator:
                 cross_errors_square_norm))
 
         return pred_target
+
+    def run_validation(self, runner, dataset, sae_epoch=100, lstm_epoch=50):
+        training_dataset = self._get_training(dataset)
+        validation_dataset = self._get_validation(dataset)
+
+        return self.train_and_eval_hard(runner, training_dataset, validation_dataset, sae_epoch, lstm_epoch)
+
+    def run_test(self, runner, dataset, sae_epoch, lstm_epoch):
+        training_dataset = self._get_training(dataset) + self._get_validation(dataset)
+        test_dataset = self._get_test(dataset)
+
+        return self.train_and_eval_hard(runner, training_dataset, test_dataset, sae_epoch, lstm_epoch)

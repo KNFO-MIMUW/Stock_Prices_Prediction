@@ -4,7 +4,7 @@ from sae_model import StackedAutoencoder
 import numpy as np
 from lstm_model import TsLSTM
 import torch.optim as optim
-from cross_validator import CrossValidator
+from validator import Validator
 import torch
 from matplotlib import pyplot as plt
 
@@ -33,11 +33,65 @@ def test():
     runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=0,
                     hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
 
-    cross_validator = CrossValidator()
-    pred_target = cross_validator.run_validation(runner, dataset, sae_epoch=1, lstm_epoch=1)
+    validator = Validator()
+    pred_target = validator.run_validation(runner, dataset, sae_epoch=200, lstm_epoch=50)
     pred_target_dollars = [(data_loader.to_dolar(x), data_loader.to_dolar(y)) for x, y in pred_target]
     dollars_loss = sum([abs(x - y) for x, y in pred_target_dollars])
     print("[RUNNER] Dollars lost={}".format(dollars_loss))
+
+
+def test_final():
+    lvl = 1
+    wavelet = 'db4'  # Haar'
+    ts_file_name = 'ford_final.csv'
+    training_days = 1200
+    days_test_frame = 90
+    tests_number = 6
+    time_frame = 60
+    time_bias = 1
+    sae_epoch = 200
+    lstm_epoch = 50
+
+
+    all_days = training_days + days_test_frame * tests_number + 30 + time_frame
+
+    data_loader = DataLoader(ts_file_name, all_days, debug=True)
+
+    raw_data = data_loader.as_matrix()
+    ts_data = denoise(raw_data, lvl, wavelet)
+
+    # plt.plot(raw_data[3])
+    # plt.show()
+    # plt.plot(ts_data[3])
+    # plt.show()
+
+    daily_features, _ = np.shape(ts_data)
+    dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
+
+    runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=0,
+                    hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
+
+    validator = Validator()
+
+    training_dataset = dataset
+    test_datasets = []
+    for _ in range(tests_number):
+        ntest = training_dataset[-days_test_frame:]
+        training_dataset = training_dataset[:-days_test_frame] #TODO CHECK!
+        test_datasets.append(ntest)
+
+    test_datasets.reverse()
+
+    pred_target = []
+
+    for test_dataset in test_datasets:
+        pred_target += validator.train_and_eval_hard(runner, training_dataset, test_dataset, sae_epoch, lstm_epoch)
+        training_dataset += test_dataset
+
+    pred_target_dollars = [(data_loader.to_dolar(x), data_loader.to_dolar(y)) for x, y in pred_target]
+    dollars_loss = sum([abs(x - y) for x, y in pred_target_dollars])
+    print("[RUNNER] Total dollars lost={}".format(dollars_loss))
+
 
 
 class Runner:
@@ -121,4 +175,4 @@ class Runner:
 
 
 if __name__ == '__main__':
-    test()
+    test_final()
