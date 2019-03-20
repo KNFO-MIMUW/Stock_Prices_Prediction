@@ -34,8 +34,10 @@ def test():
                     hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
 
     cross_validator = CrossValidator()
-    _, validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=200, lstm_epoch=50)
-    print("[RUNNER] Dollars lost={}".format(data_loader.to_dolar(validation_loss)))
+    pred_target = cross_validator.run_validation(runner, dataset, sae_epoch=1, lstm_epoch=1)
+    pred_target_dollars = [(data_loader.to_dolar(x), data_loader.to_dolar(y)) for x, y in pred_target]
+    dollars_loss = sum([abs(x - y) for x, y in pred_target_dollars])
+    print("[RUNNER] Dollars lost={}".format(dollars_loss))
 
 
 class Runner:

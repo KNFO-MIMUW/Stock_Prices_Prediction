@@ -43,7 +43,9 @@ class CrossValidator:
         comparation.plot()
         plt.show()
 
-        return errors
+        pred_target = zip(pred_values, target_values)
+
+        return errors, pred_target
 
     def run_validation(self, runner, dataset, sae_epoch=100, lstm_epoch=50):
         training_dataset = self._get_training(dataset)
@@ -52,15 +54,11 @@ class CrossValidator:
         validation_dataset = self._get_validation(dataset)
 
         _ = self._eval_plot(training_dataset, runner)
-        errors = self._eval_plot(validation_dataset, runner)
+        errors, pred_target = self._eval_plot(validation_dataset, runner)
 
-        cross_errors_sum = sum([abs(x) for x in errors])
         cross_errors_square_norm = np.linalg.norm(np.array(errors))
         print(
-            """[CROSS-VALIDATION] Loss on validation set 
-                cross_errors_sum              {}
-                cross_errors_square_norm      {}""".format(
-                cross_errors_sum,
+            """[CROSS-VALIDATION] Loss on validation set cross_errors_square_norm={}""".format(
                 cross_errors_square_norm))
 
-        return cross_errors_square_norm, cross_errors_sum
+        return pred_target
