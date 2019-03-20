@@ -22,10 +22,10 @@ def test():
     raw_data = data_loader.as_matrix()
     ts_data = denoise(raw_data, lvl, wavelet)
 
-    plt.plot(raw_data[3])
-    plt.show()
-    plt.plot(ts_data[3])
-    plt.show()
+    # plt.plot(raw_data[3])
+    # plt.show()
+    # plt.plot(ts_data[3])
+    # plt.show()
 
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
