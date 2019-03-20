@@ -10,11 +10,11 @@ from matplotlib import pyplot as plt
 
 
 def test():
-    lvl = 2
+    lvl = 1
     wavelet = 'db4' #Haar'
     ts_file_name = 'ford_ts.csv'
-    last_days = 400
-    time_frame = 30
+    last_days = 1200
+    time_frame = 60
     time_bias = 1
 
     data_loader = DataLoader(ts_file_name, last_days, debug=True)
@@ -30,10 +30,10 @@ def test():
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
-    runner = Runner(daily_features, beta=0, hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[6, 6], debug=True)
+    runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=0, hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
 
     cross_validator = CrossValidator()
-    validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=100, lstm_epoch=50)
+    validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=200, lstm_epoch=50)
     print("[RUNNER] Dollars lost={}".format(data_loader.to_dolar(validation_loss)))
 
 
@@ -47,6 +47,7 @@ class Runner:
                  sae_lr=0.001,
                  delay=4,
                  lstm_lr=0.05,
+                 lstm_layers=1,
                  debug=False):
 
         hidden_layers_sizes.insert(0, daily_features)
@@ -55,7 +56,7 @@ class Runner:
                                       hidden_nodes_activation_rate=hidden_nodes_activation_rate,
                                       lr=sae_lr,
                                       debug=debug)
-        self.lstm = TsLSTM(delay, hidden_layers_sizes[-1])
+        self.lstm = TsLSTM(delay, hidden_layers_sizes[-1], lstm_layers)
         self.lstm_optimizer = optim.SGD(self.lstm.parameters(), lr=lstm_lr)
         self.debug = debug
 
