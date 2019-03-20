@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 
 def test():
     lvl = 1
-    wavelet = 'db4' #Haar'
+    wavelet = 'db4'  # Haar'
     ts_file_name = 'ford_ts.csv'
     last_days = 1200
     time_frame = 60
@@ -30,12 +30,12 @@ def test():
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
-    runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=0, hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
+    runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=0,
+                    hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
 
     cross_validator = CrossValidator()
-    validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=200, lstm_epoch=50)
+    _, validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=200, lstm_epoch=50)
     print("[RUNNER] Dollars lost={}".format(data_loader.to_dolar(validation_loss)))
-
 
 
 class Runner:
@@ -74,7 +74,9 @@ class Runner:
             loss.backward()
             self.lstm_optimizer.step()
         if debug:
-            print("[LSTM LOSS] Epoch {}: average lstm loss on dataset = {}".format(epoch_number, total_loss / len(dataset)))
+            print("[LSTM LOSS] Epoch {}: average lstm loss on dataset = {}".format(epoch_number,
+                                                                                   total_loss / len(
+                                                                                       dataset)))
 
     def _train_sae(self, dataset, epoch=50):
         self.sae.train()

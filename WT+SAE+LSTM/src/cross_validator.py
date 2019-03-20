@@ -54,8 +54,13 @@ class CrossValidator:
         _ = self._eval_plot(training_dataset, runner)
         errors = self._eval_plot(validation_dataset, runner)
 
-        cross_diff = np.linalg.norm(np.array(errors))
-        print("[CROSS-VALIDATION] Loss on validation set = {}".format(cross_diff))
+        cross_errors_sum = sum([abs(x) for x in errors])
+        cross_errors_square_norm = np.linalg.norm(np.array(errors))
+        print(
+            """[CROSS-VALIDATION] Loss on validation set 
+                cross_errors_sum              {}
+                cross_errors_square_norm      {}""".format(
+                cross_errors_sum,
+                cross_errors_square_norm))
 
-
-        return cross_diff
+        return cross_errors_square_norm, cross_errors_sum
