@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 
 def test():
     lvl = 2
-    wavelet = 'Haar'
+    wavelet = 'db4' #Haar'
     ts_file_name = 'ford_ts.csv'
     last_days = 400
     time_frame = 30
@@ -30,10 +30,10 @@ def test():
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
-    runner = Runner(daily_features, beta=0.3, hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[10, 10], debug=True)
+    runner = Runner(daily_features, beta=0, hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[6, 6], debug=True)
 
     cross_validator = CrossValidator()
-    validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=400, lstm_epoch=50)
+    validation_loss = cross_validator.run_validation(runner, dataset, sae_epoch=100, lstm_epoch=50)
     print("[RUNNER] Dollars lost={}".format(data_loader.to_dolar(validation_loss)))
 
 

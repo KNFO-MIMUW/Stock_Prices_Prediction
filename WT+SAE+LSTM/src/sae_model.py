@@ -28,6 +28,10 @@ class Autoencoder(nn.Module):
         self.debug = debug
         self.hidden_nodes_distribution = Bernoulli(torch.tensor([hidden_nodes_activation_rate]))
 
+        self.sum_outer_diff = 0
+        self.sum_weight_decay = 0
+        self.sum_sparse_penalty_term = 0
+
         self.forward_pass = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.Sigmoid(),
@@ -59,20 +63,32 @@ class Autoencoder(nn.Module):
                                                          self.hidden_nodes_distribution)
             sparse_penalty_term *= self.beta
 
-        if self._is_debug():
-            print(
-                """[SAE LOSS] Autoencoder [i:{}, h:{}] (iter: {}th):
-            out_diff                {}
-            weight_decay            {}
-            sparse_penalty_term     {}\n""".format(
-                    self.input_size,
-                    self.hidden_size,
-                    self.iter_ctr,
-                    out_diff,
-                    weight_decay,
-                    sparse_penalty_term[0]  # TODO remove [0]
+        if self.debug:
+            self.sum_outer_diff += out_diff
+            self.sum_weight_decay += weight_decay
+            self.sum_sparse_penalty_term += sparse_penalty_term
+            if self.iter_ctr % self.LOSS_TRD == 1:
+                if self.iter_ctr == 1:
+                    samples_num = 1
+                else:
+                    samples_num = self.LOSS_TRD
+                print(
+                    """[SAE LOSS] Autoencoder [i:{}, h:{}] (iter: {}th):
+                avr out_diff                {}
+                avr weight_decay            {}
+                avr sparse_penalty_term     {}\n""".format(
+                        self.input_size,
+                        self.hidden_size,
+                        self.iter_ctr,
+                        self.sum_outer_diff / samples_num,
+                        self.sum_weight_decay / samples_num,
+                        self.sum_sparse_penalty_term[0] / samples_num  # TODO remove [0]
+                    )
                 )
-            )
+                self.sum_outer_diff = 0
+                self.sum_weight_decay = 0
+                self.sum_sparse_penalty_term = 0
+
 
         return out_diff + weight_decay + sparse_penalty_term
 
@@ -100,8 +116,6 @@ class Autoencoder(nn.Module):
     def reconstruct(self, x):
         return self.backward_pass(x)
 
-    def _is_debug(self):
-        return self.debug and self.iter_ctr % self.LOSS_TRD == 1
 
 
 class StackedAutoencoder(nn.Module):
