@@ -29,8 +29,10 @@ class CrossValidator:
 
         for x, t in dataset:
             pred_t = runner.eval_single(x)
-            t = t.squeeze()
+
             pred_t = pred_t.squeeze()
+            t = t.squeeze()
+
             errors.append(t[-1] - pred_t[-1])
 
             target_values.append(t[-1])

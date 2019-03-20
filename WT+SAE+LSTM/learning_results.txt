@@ -14,8 +14,116 @@ LSTM:
   delay                         4
   nlayers                       1
   lr                            0.05
+EPOCH:
+  sae_epoch                     100
+  lstm_epoch                    50
 RESULT:
-  validation_loss               0.318
-  dollar_loss                   11.80
+  validation_loss               0.318 0.216
+  dollar_loss                   11.80 11.50
+---------------------------------------
+
+Dataset
+  last_dayes                    400
+  time_frame                    30
+Wavelet:
+  lvl                           2
+  wavelet                       'Haar'
+SAE:
+  hidden_layers_sizes           [10]
+  gamma                         0.2
+  beta                          0.3
+  hidden_nodes_activation_rate  0.9
+  lr                            0.001
+LSTM:
+  delay                         4
+  nlayers                       1
+  lr                            0.05
+EPOCH:
+  sae_epoch                     80
+  lstm_epoch                    50
+RESULT:
+  validation_loss               0.71
+  dollar_loss                   12.98
 
 
+###############-NIEUDANE-################
+
+---------------------------------------
+
+Dataset
+  last_dayes                    600
+  time_frame                    30
+Wavelet:
+  lvl                           2
+  wavelet                       'Haar'
+SAE:
+  hidden_layers_sizes           [10, 10, 10, 10, 10]
+  gamma                         0.2
+  beta                          0
+  hidden_nodes_activation_rate  1
+  lr                            0.001
+LSTM:
+  delay                         4
+  nlayers                       1
+  lr                            0.05
+EPOCH:
+  sae_epoch=                    200
+  lstm_epoch=                   200
+RESULT:
+  validation_loss               0.90
+  dollar_loss                   15.56
+COMMENTS:
+  przewidziało linię prostą xD
+---------------------------------------
+
+Dataset
+  last_dayes                    400
+  time_frame                    30
+Wavelet:
+  lvl                           2
+  wavelet                       'Haar'
+SAE:
+  hidden_layers_sizes           [10, 10]
+  gamma                         0.2
+  beta                          0
+  hidden_nodes_activation_rate  1
+  lr                            0.001
+LSTM:
+  delay                         4
+  nlayers                       1
+  lr                            0.05
+EPOCH:
+  sae_epoch                     100
+  lstm_epoch                    50
+RESULT:
+  validation_loss               2.305
+  dollar_loss                   17.73
+COMMENTS:
+  dopasowalo sie do prostej, funkcja straty lstm rosnaca, generalnie bardzo slabo
+
+---------------------------------------
+
+Dataset
+  last_dayes                    400
+  time_frame                    30
+Wavelet:
+  lvl                           2
+  wavelet                       'Haar'
+SAE:
+  hidden_layers_sizes           [10, 10]
+  gamma                         0.2
+  beta                          0.3
+  hidden_nodes_activation_rate  0.9
+  lr                            0.001
+LSTM:
+  delay                         4
+  nlayers                       1
+  lr                            0.05
+EPOCH:
+  sae_epoch                     400
+  lstm_epoch                    50
+RESULT:
+  validation_loss               2.255
+  dollar_loss                   17.58
+COMMENTS:
+  prost
