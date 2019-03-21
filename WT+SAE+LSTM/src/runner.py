@@ -6,7 +6,10 @@ from lstm_model import TsLSTM
 import torch.optim as optim
 from validator import Validator
 import torch
+import sys
 from matplotlib import pyplot as plt
+
+sys.stdout = open('../eval/pred.txt', 'w')
 
 
 def test():
@@ -40,7 +43,7 @@ def test():
     print("[RUNNER] Dollars lost={}".format(dollars_loss))
 
 
-def test_final():
+def test_final(with_beta=False):
     lvl = 1
     wavelet = 'db4'  # Haar'
     ts_file_name = 'ford_final.csv'
@@ -52,6 +55,13 @@ def test_final():
     sae_epoch = 200
     lstm_epoch = 50
 
+    if with_beta:
+        beta = 1
+        print("[TEST_FINAL] EVALUATION OF MODEL WITH BETA=1")
+    else:
+        beta = 0
+        print("[TEST_FINAL] EVALUATION OF MODEL WITH BETA=0")
+
 
     all_days = training_days + days_test_frame * tests_number + 30 + time_frame
 
@@ -60,15 +70,10 @@ def test_final():
     raw_data = data_loader.as_matrix()
     ts_data = denoise(raw_data, lvl, wavelet)
 
-    # plt.plot(raw_data[3])
-    # plt.show()
-    # plt.plot(ts_data[3])
-    # plt.show()
-
     daily_features, _ = np.shape(ts_data)
     dataset = data_loader.prepare_dataset_sae(ts_data, time_frame, time_bias)
 
-    runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=0,
+    runner = Runner(daily_features, lstm_layers=1, gamma=0.005, delay=4, sae_lr=0.01, beta=beta,
                     hidden_nodes_activation_rate=0.9, hidden_layers_sizes=[8], debug=True)
 
     validator = Validator()
@@ -91,6 +96,7 @@ def test_final():
     pred_target_dollars = [(data_loader.to_dolar(x), data_loader.to_dolar(y)) for x, y in pred_target]
     dollars_loss = sum([abs(x - y) for x, y in pred_target_dollars])
     print("[RUNNER] Total dollars lost={}".format(dollars_loss))
+    print("==============================================================")
 
 
 
@@ -176,3 +182,4 @@ class Runner:
 
 if __name__ == '__main__':
     test_final()
+    test_final(with_beta=True)

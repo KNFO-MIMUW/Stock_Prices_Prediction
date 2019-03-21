@@ -59,10 +59,10 @@ class DataLoader:
         trimmed.drop(trimmed.index[:30], inplace=True)
 
         if self.debug:
-            time_frames, daily_features = self._ts.shape
+            time_frames, daily_features = self._ts.shape #o 2 za duzo
             print("""[DATA LOADER] Trimmed dataset created:
             time_frames     {}
-            daily features  {}""".format(time_frames, daily_features))
+            daily features  {}""".format(time_frames, daily_features-2))
         return trimmed.values.transpose()
 
     def _normalize_data(self, data):
