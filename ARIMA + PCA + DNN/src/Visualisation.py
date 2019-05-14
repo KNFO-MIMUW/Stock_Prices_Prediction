@@ -1,5 +1,4 @@
 # Authors: Damian Burczyk, Grzegorz Pielot
-# Based on Based on "Stock prediction using deep learning" by Ritika Singh and Shashi Srivastava
 import pandas as pd
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
