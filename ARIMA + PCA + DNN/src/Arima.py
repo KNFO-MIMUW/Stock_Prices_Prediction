@@ -23,17 +23,18 @@ parameters = (p, q, r)
 # input data
 raw = pd.read_csv(data_path, header=0, parse_dates=True, index_col=0, squeeze=True, date_parser=pd.to_datetime)
 close = raw.truncate(before=date_from, after=date_to)['Close']
+close_array = close.values
 
 size = close.shape[0]
 if predict_by_rate:
-    data_tmp = ((np.array(close[1:size]) - np.array(close[0:size - 1])) / np.array(close[0:size - 1]))
+    data_tmp = ((np.array(close_array[1:size]) - np.array(close_array[0:size - 1])) / np.array(close_array[0:size - 1]))
     data = np.concatenate(([0], data_tmp))
 else:
-    data = close
+    data = close.values
 
 # data split
 split = int(size * (1.0 - test_ratio))
-learning_set, test_set = data.values[:split], data.values[split:]
+learning_set, test_set = data[:split], data[split:]
 forecast = []
 
 # result generation
@@ -41,7 +42,7 @@ for i in range(0, test_set.size):
     prediction = ARIMA(learning_set, order=parameters).fit(disp=-1).forecast()[0][0]
 
     if predict_by_rate:
-        forecast.append(prediction * close.values[split + i - 1] + close.values[split + i - 1])
+        forecast.append(prediction * close_array[split + i - 1] + close_array[split + i - 1])
     else:
         forecast.append(prediction)
 
@@ -50,10 +51,10 @@ for i in range(0, test_set.size):
     if i % 10 == 0:
         print('ARIMA progress {}/{}'.format(i, test_set.size))
 
-mse = mean_squared_error(close.values[split:], forecast)
+mse = mean_squared_error(close_array[split:], forecast)
 
 # output
-result = pd.DataFrame({'Close': close.values[split:], 'Forecast': forecast},
+result = pd.DataFrame({'Close': close_array[split:], 'Forecast': forecast},
                       index=raw.truncate(before=date_from, after=date_to).index[split:])
 result.to_csv(path_or_buf=result_path + '.csv')
 
